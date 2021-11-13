@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## PRIOR TO CLASS
+## Prior to class
 
 1.  Make sure you have access to `hoffman2`. You can do this easily here: <https://www.hoffman2.idre.ucla.edu/Accounts/Requesting-an-account.html>
 
@@ -102,7 +102,7 @@ This data is taken from a recent [preprint](https://www.medrxiv.org/content/10.1
 
 -   Only around 1-1.5 million reads per sample
 
-## EXERCISE 2: FASTQ FILES AND QUALITY CONTROL
+## EXERCISE 2: FASTQ files and quality control 
 
 ### Exercise 2A: Working with FASTQ files
 
@@ -146,7 +146,7 @@ Alternatively, files can be transfered using the command-line utilities `SCP` an
 
 -   Are there any obvious quality differences between the two samples?
 
-## Exercise 3: Filtering low-quality reads
+## EXERCISE 3: Filtering low-quality reads
 
 The first step in a sequence data analysis is usually to remove the subset of the data that has insufficient quality -- keeping unreliable reads and base calls can introduce unnecessary noise in the analysis.
 
@@ -183,3 +183,157 @@ Let's do the following:
 -   Run the command, wait for it to finish (shouldn't take that long), and then make sure the output file exists and is not empty. How many reads are in the output file? Does this reflect what `trimmomatic` outputs onto the terminal?
 
 -   Modify the command to process the other sample and check its output file.
+
+## EXERCISE 4: Aligning reads to the reference genome
+
+Here, we will align our RNA-seq Illumina reads to the reference human genome using the program `STAR`.
+
+### Exercise 4A: Creating a STAR genome database
+
+Read alignment programs typically require the construction of a genome sequence database as a preliminary step before they are able to perform read alignments. This is necessary because aligning directly to a genome sequence in FASTA format is not computationally efficient, but only needs to be run once.
+
+To create a genome database against which to map reads, `STAR` needs the genome sequence (FASTA file) and the gene/transcript/exon annotations (GTF file).
+
+Note: Because of time and memory constraints during the workshop, we will not use the full genome, but actually only Chromosome 18.
+
+First, we have to download some reference data. We're using the human GENCODE Release 38 files. Change your directory to `~/QCB-W5a-Nov2021/Data/`. Run the following commands to download a GTF and a FASTA file for some annotations:
+
+```{bash, eval=F}
+wget ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_38/gencode.v38.basic.annotation.gtf.gz
+zcat gencode.v38.basic.annotation.gtf.gz | grep -w chr18 > gencode.v38.basic_chr18.gtf
+
+wget ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_38/gencode.v38.pc_transcripts.fa.gz
+
+module load samtools
+gunzip gencode.v38.pc_transcripts.fa.gz
+grep ">" gencode.v38.pc_transcripts.fa | grep "|18|" | awk 'BEGIN {FS=">"} {print $2}' > selection_18
+samtools faidx gencode.v38.pc_transcripts.fa `cat selection_18` > gencode.v38.pc_chr18.fa
+```
+
+This will take a little bit of time to download and run. Let's discuss what exactly we're doing in this chunk of code.
+
+Now, we're ready to run STAR.
+
+-   `hoffman2` provides `STAR` as a module. Load the `STAR` module with the command `module load STAR`.
+
+-   Inside your `QCB-W5a-Nov2021/` directory, create a `star_database/` subdirectory and `cd` inside this directory.
+
+-   Create a `STAR` database using the following commands:
+
+```{bash, eval=F}
+fasta_file=../QCB-W5a-Nov2021/Data/gencode.v38.pc_chr18.fa
+gtf_file=../QCB-W5a-Nov2021/Data/gencode.v38.basic_chr18.gtf
+
+STAR \
+--runMode genomeGenerate \
+--genomeFastaFiles $fasta_file \
+--sjdbGTFfile $gtf_file \
+--genomeDir ./
+```
+
+This command should take a bit of time to complete too.
+
+While we wait: what are these commands doing?
+
+-   Once `STAR` has completed, check for errors in the terminal and in the `STAR` log file, and for existing non-empty output files.
+
+### Exercise 4B: Aligning reads to the genome
+
+-   To align the cleaned reads of `KD`, we can run the following commands:
+
+    ```{bash, eval=F}
+    cd ~/QCB-W5a-Nov2021/Data/
+    star_dc_dir=./star_database/
+    sample=KD1
+
+    STAR \
+    --genomeDir $star_db_dir \
+    --readFilesIn $sample.trimmo.fastq.gz \
+    --outFileNamePrefix ./$sample. \
+    --outSAMtype BAM SortedByCoordinate \
+    --outFilterMismatchNmax 5 \
+    --outFilterMultimapNmax 1
+    ```
+
+After the program completes, check for errors in the terminal and in the `STAR` log file (especially toward the end), and for existing non-empty output files.
+
+While the program runs, try to understand the above command. You can find the description of each `STAR` option we have used in the help (`STAR --help`). You can also star installing `IGV` on your laptop (see next exercise).
+
+-   Review the alignment statistics in the `Log.final.out` output file. What proportion of reads mapped unambiguously to the genome database?
+
+### Exercise 4C: Visualizing read alignments
+
+It is sometimes useful to visualize read alignments directly. It should give you a feel for the contents of BAM files, and it is also useful to gain an more intuitive, human understanding of how the raw data behaves at a gene of particular biological interest -- command line tools can fail to appreciate complex patterns such as alignment artifacts, or issues related to genetic diversity or splicing.
+
+One popular visualization tool is the Integrated Genomics Viewer (`IGV`); let's open our BAM files in `IGV`.
+
+-   Install `IGV` on your laptop for [here](https://software.broadinstitute.org/software/igv/download).
+
+-   On the cluster, using the `samtools` program, create indexes for each of your two read alignment `BAM` files. You can use the `samtools index` command (but first load `samtools`). This will create a `BAM` index (`BAI`) file for each `BAM` file.
+
+-   Download your two `BAM` files and their two `BAI` files to your laptop.
+
+-   Start IGV, and open the human genome. Go to File \> Load from file and open your two `BAM` files.
+
+-   Navigate to the *NOL4* gene using the search box. How do the two samples differ?
+
+## EXERCISE 5: Quantifying per-gene expression
+
+### Exercise 5A: Installing HTSeq
+
+To quantify expression at the gene level, we will use the `HTSeq` program. It is not provided by `hoffman2`, nor in the workshop's directory. However, you can easily install it yourself.
+
+First, load the Python3 module with the command `module load python/3.7.2`.
+
+You can then install `HTSeq` as a Python3 package:
+
+```{bash, eval=F}
+python3 -m pip install --user HTSeq
+```
+
+This will install `HTSeq` at `~/.local/bin/htseq-count`.
+
+### Exercise 5B: Tallying per-gene read counts
+
+Use `HTSeq` to count the number of reads mapping to each gene.
+
+```{bash, eval=F}
+cd ~/QCB-W5a-Nov2021/Data
+sample=KD1
+bam_file=..$sample.Aligned.sortedByCoord.out.bam
+gtf_file=gencode.v38.basic_chr18.gtf
+~/.local/bin/htseq-count \
+--idattr=gene_id \
+--type=exon --mode=union \
+--format=bam \
+--stranded=yes \
+$bam_file \
+$gtf_file \
+> $sample.pergene_counts
+```
+
+This should take about 1 minute. Make sure you understand what the above command is doing. The `htseq-count` options are described in the `HTSeq` help (available with `htseq-count --help`).
+
+### Exercise 5C: Merging all samples' counts into one big table
+
+1HTSeq1 generates a separate table of per-gene read counts for each sample. For statistical analyses, it is more practical to merge all these tables into one large table comprising the counts at all genes and for all samples.
+
+There are many alternative ways to generate such a table; one such way is using the `R` package `edgeR`.
+
+-   On the cluster, load `R`: `module load R/4.1.0-BIO`.
+
+-   Start an `R` session by entering `R`.
+
+-   `edgeR` is installed already.
+
+-   In `R`, load, merge, and save the global counts table using the following `R` commands.
+
+```{r,eval=F}
+library(edgeR)
+samples <- c('KD1', 'SC1')
+files <- paste0(samples,'.Aligned.sortedByCoord.out.bam.pergene_counts')
+counts <- readDGE(files, labels=samples, header=FALSE)
+write.csv(counts$counts, 'counts.csv')
+```
+
+## EXERCISE 6: Salmon and tximeta

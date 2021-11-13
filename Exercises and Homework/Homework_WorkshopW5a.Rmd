@@ -1,0 +1,31 @@
+---
+title: 'Homework: Workshop W5a'
+author: "Arjun Bhattacharya"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Focusing on the RNA-seq methodology of either of the two articles listed below (whichever you prefer and you need not read them completely), answer the following questions:
+
+1.  What tissue was the RNA extracted from?
+
+2.  What RNA fractions were selected for sequencing (i.e. did the authors use polyA-tail capture to isolate mRNAs, or did they use rRNA depletion)?
+
+3.  How was the sequencing performed?
+
+4.  What software was used to align reads and to what reference genome?
+
+5.  What software was used to quantify gene expression from read alignments?
+
+6.  Briefly, what research questions do the authors answer using RNA-seq?
+
+Please send your answers to abtbhatt\@g.ucla.edu by December 15, 2021.
+
+Articles:
+
+-   Kim, J.-W., Yang, H.-J., Brooks, M. J., Zelinger, L., KarakÃ¼lah, G., Gotoh, N., Boleda, A., Gieser, L., Giuste, F., Whitaker, D. T., Walton, A., Villasmil, R., Barb, J. J., Munson, P. J., Kaya, K. D., Chaitankar, V., Cogliati, T., & Swaroop, A. (2016). NRL-Regulated Transcriptome Dynamics of Developing Rod Photoreceptors. Cell Reports, 17(9), 2460-2473. <https://doi.org/10.1016/j.celrep.2016.10.074>
+
+-   van Schouwenburg, P. A., Davenport, E. E., Kienzler, A.-K., Marwah, I., Wright, B., Lucas, M., Malinauskas, T., Martin, H. C., WGS500 Consortium, Lockstone, H. E., Cazier, J.-B., Chapel, H. M., Knight, J. C., & Patel, S. Y. (2015). Application of whole genome and RNA sequencing to investigate the genomic landscape of common variable immunodeficiency disorders. Clinical Immunology (Orlando, Fla.), 160(2), 301-314. <https://doi.org/10.1016/j.clim.2015.05.020>
