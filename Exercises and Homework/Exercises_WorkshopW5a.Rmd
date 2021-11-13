@@ -1,0 +1,83 @@
+---
+title: 'Exercises for Workshop W5a: RNA-seq I Analysis'
+author: "Arjun Bhattacharya"
+date: "11/13/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## PRIOR TO CLASS
+
+1.  Make sure you have access to `hoffman2`. You can do this easily here: <https://www.hoffman2.idre.ucla.edu/Accounts/Requesting-an-account.html>
+
+2.  Once you have an account, we need a few software packages that are not available on `hoffman2`. I'll provide step-by-step instructions.
+
+### Installing FastQC
+
+In your home directory, run the following command to download and unpack the FastQC software:
+
+```{bash, eval=F}
+wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.9.zip --no-check-certificate
+unzip fastqc_v0.11.9.zip
+```
+
+To check if FastQC installed properly:
+
+```{bash, eval=F}
+~/FastQC/fastqc --help
+```
+
+Next, we have to download and install trimmomatic:
+
+```{bash, eval=F}
+wget http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmomatic-0.39.zip
+unzip Trimmomatic-0.39.zip
+```
+
+To check if trimmomatic install properly, we'll first have to call an interactive shell and then load up `Java`:
+
+```{bash, eval=F}
+qrsh -l h_rt=0:30:00,h_data=5G
+module load java
+java -jar Trimmomatic-0.39/trimmomatic-0.39.jar
+```
+
+Lastly, we have to install Salmon:
+
+```{bash, eval=F}
+wget https://github.com/COMBINE-lab/salmon/releases/download/v1.5.1/salmon-1.5.1_linux_x86_64.tar.gz
+tar xzvf salmon-1.5.1_linux_x86_64.tar.gz
+```
+
+To check if Salmon installed properly:
+
+```{bash, eval=F}
+salmon-1.5.1_linux_x86_64/bin/salmon
+```
+
+## EXERCISE 1
+
+### Exercise 1A: Logging in (connecting) to `hoffman2`
+
+To log into the cluster, open up a terminal. In Windows, you can use the [PuTTY app](https://www.putty.org/) (or the `cmd` app itself usually works). In Mac or Linux, you can just use the `terminal` app. Once you've opened up your terminal, enter the follow command to connect to `hoffman2`:
+
+```{bash, eval=F}
+ssh your_username@hoffman2.idre.ucla.edu
+```
+
+**Make sure you put your own username here!**
+
+Important: Every time you connect to the `hoffman2` cluster, you will initially have a session on the login node (login server). Because this computer is shared among all users and has limited computing resources, it's **bad practice** to run even mild computations on this node. The first thing you should do after logging into the cluster is to ask for an interactive session on a worker node, by running the command:
+
+```{bash, eval=F}
+qrsh -l h_rt=2:00:00,h_data=8G
+```
+
+This opens up a 2 hour session with up to 8 GB of memory. After a few seconds (hopefully, fingers crossed...), you should have been given an interactive session on a worker node. You can tell that you have moved by looking at the server name in your command prompt: the name of `hoffman2` login node is `login2`, while worker nodes have names like `n2190` or `n2236`.
+
+### Exercise 1B: Obtaining the workshop data
+
+Once you are connected to the cluster and logged into a worker node, make a copy of the workshop data in your `home` directory. Since this
