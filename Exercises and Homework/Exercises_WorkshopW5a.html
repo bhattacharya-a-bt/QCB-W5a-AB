@@ -212,8 +212,78 @@ tar xzvf salmon-1.5.1_linux_x86_64.tar.gz</code></pre>
 </div>
 <div id="exercise-1b-obtaining-the-workshop-data" class="section level3">
 <h3>Exercise 1B: Obtaining the workshop data</h3>
-<p>Once you are connected to the cluster and logged into a worker node, make a copy of the workshop data in your <code>home</code> directory. Since this</p>
+<p>Once you are connected to the cluster and logged into a worker node, make a copy of the workshop data in your <code>home</code> directory. Let’s practice grabbing files and folders from Github. Run the following code to clone the Github repository for this workshop into your <code>home</code> directory:</p>
+<pre class="bash"><code>git clone https://github.com/bhattacharya-a-bt/QCB-W5a-Nov2021.git</code></pre>
+<ul>
+<li>Exercise: How many folders are in this repository? What commands did you use?</li>
+</ul>
+<p>The example data for this workshop is way too big to host on Github. I’ve kept it in my SCRATCH directory. Let’s delete the Github clone and recopy</p>
+<pre class="bash"><code>cp -r /u/scratch/a/abthatt/QCB-W5a-Nov2021/Data/ ~/QCB-W5a-Nov2021/Data/</code></pre>
+<p>EDIT THIS LATER</p>
+<p>This data is taken from a recent <a href="https://www.medrxiv.org/content/10.1101/2021.04.12.21255170v3">preprint</a>. The original data, fully compressed, is around 20 GB. Here, we’re only looking at a subset of the data:</p>
+<ul>
+<li><p>Only two samples</p></li>
+<li><p>Only around 1-1.5 million reads per sample</p></li>
+</ul>
 </div>
+</div>
+<div id="exercise-2-fastq-files-and-quality-control" class="section level2">
+<h2>EXERCISE 2: FASTQ FILES AND QUALITY CONTROL</h2>
+<div id="exercise-2a-working-with-fastq-files" class="section level3">
+<h3>Exercise 2A: Working with FASTQ files</h3>
+<p>Let’s look at these two files: <code>KD1.fastq.gz</code> and <code>SC1.fastq.gz</code> , which comprise the sequence reads for <code>KD</code> and <code>SC</code> in FASTQ format.</p>
+<p><em>Note: This file has been compressed with <code>GZIP</code>, so you may need to decompress it using <code>gzip</code> or <code>zcat</code> to access the FASTQ text contained. Some programs (such as the <code>less</code> text viewer, and many bioinformatic tools) know how to deal with gzipped files.</em></p>
+<ul>
+<li><p>How many lines does each file have? How many reads do we have for each sample?</p></li>
+<li><p>How long is the first read for <code>KD1.fastq.gz</code> ?</p></li>
+<li><p>What is the PHRED-scaled confidence for the first base call of the first read?</p></li>
+</ul>
+</div>
+<div id="exercise-2b-quality-control-with-fastqc" class="section level3">
+<h3>Exercise 2B: Quality control with FastQC</h3>
+<p>FastQC is a program that parses FASTQ read files and outputs a number of human-readable summary statistics and plots. Let’s use it to check the quality of the sequence data for our two samples, <code>KD</code> and <code>SC</code>. The <code>hoffman2</code> cluster does not provide the FastQC program, but you should have already installed it to your home directory. Because we are using a personal copy of the program rather than a system-wide installation, to run it we have the provide the full path to the main file of the program:</p>
+<pre class="bash"><code>~/FastQC/fastqc --help</code></pre>
+<p>Note: <code>--help</code> or <code>-h</code> are standard options, which many programs recognize as a request for information about the software.</p>
+<p>So now, we can run FastQC on the reads of <code>KD1.fastq.gz</code> like this:</p>
+<pre class="bash"><code>~/FastQC/fastqc ~/QCB-W5a-Nov2021/Data/KD1.fastq.gz</code></pre>
+<ul>
+<li><p>Run FastQC on both sequence files. Wait for the program to complete (this should only take about a minute).</p></li>
+<li><p>How many output files did each run create? (Note: You can list the files in a directory in the order in which they were create using <code>ls -ltr</code>.)</p></li>
+</ul>
+</div>
+<div id="exercise-2c-transferring-files-fromto-the-cluster" class="section level3">
+<h3>Exercise 2C: Transferring files from/to the cluster</h3>
+<p>The easiest way to transfer files is to use an SFTP client with a graphical interface, like <a href="https://winscp.net/eng/download.php">WinSCP</a> or <a href="https://filezilla-project.org/download.php?type=server">FileZilla</a> for Windows or <a href="https://filezilla-project.org/download.php?type=server">FileZilla</a> or <a href="https://cyberduck.io/">Cyberduck</a> for Mac or Linux.</p>
+<p>Alternatively, files can be transfered using the command-line utilities <code>SCP</code> and <code>RSYNC</code>. Yet larger datasets may be transfered from/to <code>hoffman2</code> using the grid-computing toolkit <a href="https://www.hoffman2.idre.ucla.edu/Using-H2/Data-transfer.html">Globus</a>.</p>
+<ul>
+<li><p>Download the output files from FastQC to your laptop. They are HTML files, so we can open them with a web browser.</p></li>
+<li><p>Are there any obvious quality differences between the two samples?</p></li>
+</ul>
+</div>
+</div>
+<div id="exercise-3-filtering-low-quality-reads" class="section level2">
+<h2>Exercise 3: Filtering low-quality reads</h2>
+<p>The first step in a sequence data analysis is usually to remove the subset of the data that has insufficient quality – keeping unreliable reads and base calls can introduce unnecessary noise in the analysis.</p>
+<p>To do so, we will use the program <code>trimmomatic</code>. Like for FastQC above, the <code>hoffman2</code> cluster doesn’t provide <code>trimmomatic</code>, but we did install this to our home directory.</p>
+<p>The <code>.jar</code> extension in the program name indicates that this is a Java program and should be run not directly by through the Java program. First, we have to load the Java module with <code>module load java</code>.</p>
+<p>Unlike most programs, <code>trimmomatic</code> does not have much built-in documentation – in particular, the <code>-h</code>/<code>--help</code> documentation is only minimaly useful. We can instead refer to the <code>Trimmomatic</code> <a href="http://www.usadellab.org/cms/?page=trimmomatic">website</a> which gives this example for single-end data:</p>
+<pre class="bash"><code>java -jar trimmomatic-0.35.jar SE -phred33 input.fastq.gz   output.fastq.gz ILLUMINACLIP:TruSeq3-SE:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36</code></pre>
+<p>Let’s do the following:</p>
+<ul>
+<li><p>Copy-paste the above command in a text editor, like Notepad or TextWrangler.</p></li>
+<li><p>According to the documentation on the <code>trimmomatic</code> home page, what are the different parts of the command doing?</p></li>
+<li><p>Modify the command so that:</p>
+<ul>
+<li><p>it uses the correct path to the program in your home directory</p></li>
+<li><p>it uses <code>KD1.fastq.gz</code> are its input file</p></li>
+<li><p>the output file is named after the input file but is distinguishable from the input file</p></li>
+<li><p>it asks for minimum leading and trailing base qualities of 20</p></li>
+<li><p>it asks for a minimum final read length of 60 basepairs (or 80% of the raw read length)</p></li>
+<li><p>at the end of the command line, add the option <code>-threads 1</code>. This is to use a single thread/processor, as the default is to use several.</p></li>
+</ul></li>
+<li><p>Run the command, wait for it to finish (shouldn’t take that long), and then make sure the output file exists and is not empty. How many reads are in the output file? Does this reflect what <code>trimmomatic</code> outputs onto the terminal?</p></li>
+<li><p>Modify the command to process the other sample and check its output file.</p></li>
+</ul>
 </div>
 
 

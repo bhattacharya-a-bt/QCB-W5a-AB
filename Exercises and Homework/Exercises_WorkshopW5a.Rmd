@@ -80,4 +80,106 @@ This opens up a 2 hour session with up to 8 GB of memory. After a few seconds (h
 
 ### Exercise 1B: Obtaining the workshop data
 
-Once you are connected to the cluster and logged into a worker node, make a copy of the workshop data in your `home` directory. Since this
+Once you are connected to the cluster and logged into a worker node, make a copy of the workshop data in your `home` directory. Let's practice grabbing files and folders from Github. Run the following code to clone the Github repository for this workshop into your `home` directory:
+
+```{bash, eval=F}
+git clone https://github.com/bhattacharya-a-bt/QCB-W5a-Nov2021.git
+```
+
+-   Exercise: How many folders are in this repository? What commands did you use?
+
+The example data for this workshop is way too big to host on Github. I've kept it in my SCRATCH directory. Let's delete the Github clone and recopy
+
+```{bash, eval=F}
+cp -r /u/scratch/a/abthatt/QCB-W5a-Nov2021/Data/ ~/QCB-W5a-Nov2021/Data/
+```
+
+EDIT THIS LATER
+
+This data is taken from a recent [preprint](https://www.medrxiv.org/content/10.1101/2021.04.12.21255170v3). The original data, fully compressed, is around 20 GB. Here, we're only looking at a subset of the data:
+
+-   Only two samples
+
+-   Only around 1-1.5 million reads per sample
+
+## EXERCISE 2: FASTQ FILES AND QUALITY CONTROL
+
+### Exercise 2A: Working with FASTQ files
+
+Let's look at these two files: `KD1.fastq.gz` and `SC1.fastq.gz` , which comprise the sequence reads for `KD` and `SC` in FASTQ format.
+
+*Note: This file has been compressed with `GZIP`, so you may need to decompress it using `gzip` or `zcat` to access the FASTQ text contained. Some programs (such as the `less` text viewer, and many bioinformatic tools) know how to deal with gzipped files.*
+
+-   How many lines does each file have? How many reads do we have for each sample?
+
+-   How long is the first read for `KD1.fastq.gz` ?
+
+-   What is the PHRED-scaled confidence for the first base call of the first read?
+
+### Exercise 2B: Quality control with FastQC
+
+FastQC is a program that parses FASTQ read files and outputs a number of human-readable summary statistics and plots. Let's use it to check the quality of the sequence data for our two samples, `KD` and `SC`. The `hoffman2` cluster does not provide the FastQC program, but you should have already installed it to your home directory. Because we are using a personal copy of the program rather than a system-wide installation, to run it we have the provide the full path to the main file of the program:
+
+```{bash, eval=F}
+~/FastQC/fastqc --help
+```
+
+Note: `--help` or `-h` are standard options, which many programs recognize as a request for information about the software.
+
+So now, we can run FastQC on the reads of `KD1.fastq.gz` like this:
+
+```{bash, eval=F}
+~/FastQC/fastqc ~/QCB-W5a-Nov2021/Data/KD1.fastq.gz
+```
+
+-   Run FastQC on both sequence files. Wait for the program to complete (this should only take about a minute).
+
+-   How many output files did each run create? (Note: You can list the files in a directory in the order in which they were create using `ls -ltr`.)
+
+### Exercise 2C: Transferring files from/to the cluster
+
+The easiest way to transfer files is to use an SFTP client with a graphical interface, like [WinSCP](https://winscp.net/eng/download.php) or [FileZilla](https://filezilla-project.org/download.php?type=server) for Windows or [FileZilla](https://filezilla-project.org/download.php?type=server) or [Cyberduck](https://cyberduck.io/) for Mac or Linux.
+
+Alternatively, files can be transfered using the command-line utilities `SCP` and `RSYNC`. Yet larger datasets may be transfered from/to `hoffman2` using the grid-computing toolkit [Globus](https://www.hoffman2.idre.ucla.edu/Using-H2/Data-transfer.html).
+
+-   Download the output files from FastQC to your laptop. They are HTML files, so we can open them with a web browser.
+
+-   Are there any obvious quality differences between the two samples?
+
+## Exercise 3: Filtering low-quality reads
+
+The first step in a sequence data analysis is usually to remove the subset of the data that has insufficient quality -- keeping unreliable reads and base calls can introduce unnecessary noise in the analysis.
+
+To do so, we will use the program `trimmomatic`. Like for FastQC above, the `hoffman2` cluster doesn't provide `trimmomatic`, but we did install this to our home directory.
+
+The `.jar` extension in the program name indicates that this is a Java program and should be run not directly by through the Java program. First, we have to load the Java module with `module load java`.
+
+Unlike most programs, `trimmomatic` does not have much built-in documentation -- in particular, the `-h`/`--help` documentation is only minimaly useful. We can instead refer to the `Trimmomatic` [website](http://www.usadellab.org/cms/?page=trimmomatic) which gives this example for single-end data:
+
+```{bash, eval=F}
+java -jar trimmomatic-0.35.jar SE -phred33 input.fastq.gz   output.fastq.gz ILLUMINACLIP:TruSeq3-SE:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
+```
+
+Let's do the following:
+
+-   Copy-paste the above command in a text editor, like Notepad or TextWrangler.
+
+-   According to the documentation on the `trimmomatic` home page, what are the different parts of the command doing?
+
+-   Modify the command so that:
+
+    -   it uses the correct path to the program in your home directory
+
+    -   it uses `KD1.fastq.gz` are its input file
+
+    -   the output file is named after the input file but is distinguishable from the input file
+
+    -   it asks for minimum leading and trailing base qualities of 20
+
+    -   it asks for a minimum final read length of 60 basepairs (or 80% of the raw read length)
+
+    -   at the end of the command line, add the option `-threads 1`. This is to use a single thread/processor, as the default is to use several.
+
+-   Run the command, wait for it to finish (shouldn't take that long), and then make sure the output file exists and is not empty. How many reads are in the output file? Does this reflect what `trimmomatic` outputs onto the terminal?
+
+-   Modify the command to process the other sample and check its output file.
