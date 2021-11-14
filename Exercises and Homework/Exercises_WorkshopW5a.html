@@ -11,7 +11,7 @@
 
 <meta name="author" content="Arjun Bhattacharya" />
 
-<meta name="date" content="2021-11-13" />
+<meta name="date" content="2021-11-16" />
 
 <title>Exercises for Workshop W5a: RNA-seq I Analysis</title>
 
@@ -167,7 +167,7 @@ pre code {
 
 <h1 class="title toc-ignore">Exercises for Workshop W5a: RNA-seq I Analysis</h1>
 <h4 class="author">Arjun Bhattacharya</h4>
-<h4 class="date">11/13/2021</h4>
+<h4 class="date">11/16/2021</h4>
 
 </div>
 
@@ -217,9 +217,9 @@ tar xzvf salmon-1.5.1_linux_x86_64.tar.gz</code></pre>
 <ul>
 <li>Exercise: How many folders are in this repository? What commands did you use?</li>
 </ul>
-<p>The example data for this workshop is way too big to host on Github. I’ve kept it in my SCRATCH directory. Let’s delete the Github clone and recopy</p>
-<pre class="bash"><code>cp -r /u/scratch/a/abthatt/QCB-W5a-Nov2021/Data/ ~/QCB-W5a-Nov2021/Data/</code></pre>
-<p>EDIT THIS LATER</p>
+<p>The example data for this workshop is way too big to host on Github. I’ve kept it in my <code>SCRATCH</code> directory. Let’s delete the Github clone and recopy:</p>
+<pre class="bash"><code>rm -rf QCB-W5a-Nov2021/
+cp -r /u/scratch/a/abtbhatt/QCB-W5a-Nov2021/ /u/home/a/abtbhatt/</code></pre>
 <p>This data is taken from a recent <a href="https://www.medrxiv.org/content/10.1101/2021.04.12.21255170v3">preprint</a>. The original data, fully compressed, is around 20 GB. Here, we’re only looking at a subset of the data:</p>
 <ul>
 <li><p>Only two samples</p></li>
@@ -293,30 +293,17 @@ tar xzvf salmon-1.5.1_linux_x86_64.tar.gz</code></pre>
 <p>Read alignment programs typically require the construction of a genome sequence database as a preliminary step before they are able to perform read alignments. This is necessary because aligning directly to a genome sequence in FASTA format is not computationally efficient, but only needs to be run once.</p>
 <p>To create a genome database against which to map reads, <code>STAR</code> needs the genome sequence (FASTA file) and the gene/transcript/exon annotations (GTF file).</p>
 <p>Note: Because of time and memory constraints during the workshop, we will not use the full genome, but actually only Chromosome 18.</p>
-<p>First, we have to download some reference data. We’re using the human GENCODE Release 38 files. Change your directory to <code>~/QCB-W5a-Nov2021/Data/</code>. Run the following commands to download a GTF and a FASTA file for some annotations:</p>
-<pre class="bash"><code>wget ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_38/gencode.v38.basic.annotation.gtf.gz
-zcat gencode.v38.basic.annotation.gtf.gz | grep -w chr18 &gt; gencode.v38.basic_chr18.gtf
-
-wget ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_38/gencode.v38.pc_transcripts.fa.gz
-
-module load samtools
-gunzip gencode.v38.pc_transcripts.fa.gz
-grep &quot;&gt;&quot; gencode.v38.pc_transcripts.fa | grep &quot;|18|&quot; | awk &#39;BEGIN {FS=&quot;&gt;&quot;} {print $2}&#39; &gt; selection_18
-samtools faidx gencode.v38.pc_transcripts.fa `cat selection_18` &gt; gencode.v38.pc_chr18.fa</code></pre>
-<p>This will take a little bit of time to download and run. Let’s discuss what exactly we’re doing in this chunk of code.</p>
-<p>Now, we’re ready to run STAR.</p>
 <ul>
-<li><p><code>hoffman2</code> provides <code>STAR</code> as a module. Load the <code>STAR</code> module with the command <code>module load STAR</code>.</p></li>
+<li><p><code>hoffman2</code> provides <code>STAR</code> as a module. Load the <code>STAR</code> module with the command <code>module load star</code>.</p></li>
 <li><p>Inside your <code>QCB-W5a-Nov2021/</code> directory, create a <code>star_database/</code> subdirectory and <code>cd</code> inside this directory.</p></li>
 <li><p>Create a <code>STAR</code> database using the following commands:</p></li>
 </ul>
-<pre class="bash"><code>fasta_file=../QCB-W5a-Nov2021/Data/gencode.v38.pc_chr18.fa
-gtf_file=../QCB-W5a-Nov2021/Data/gencode.v38.basic_chr18.gtf
+<pre class="bash"><code>fasta_file=/u/home/a/abtbhatt/QCB-W5a-Nov2021/Data/GRCh38_chr18.fa
 
 STAR \
 --runMode genomeGenerate \
 --genomeFastaFiles $fasta_file \
---sjdbGTFfile $gtf_file \
+--genomeSAindexNbases 12 \
 --genomeDir ./</code></pre>
 <p>This command should take a bit of time to complete too.</p>
 <p>While we wait: what are these commands doing?</p>
@@ -329,16 +316,17 @@ STAR \
 <ul>
 <li><p>To align the cleaned reads of <code>KD</code>, we can run the following commands:</p>
 <pre class="bash"><code>cd ~/QCB-W5a-Nov2021/Data/
-star_dc_dir=./star_database/
+star_db_dir=/u/home/a/abtbhatt/QCB-W5a-Nov2021/star_database/
 sample=KD1
 
 STAR \
 --genomeDir $star_db_dir \
---readFilesIn $sample.trimmo.fastq.gz \
+--readFilesIn $sample.fastq.gz \
 --outFileNamePrefix ./$sample. \
 --outSAMtype BAM SortedByCoordinate \
 --outFilterMismatchNmax 5 \
---outFilterMultimapNmax 1</code></pre></li>
+--outFilterMultimapNmax 1 \
+--readFilesCommand zcat </code></pre></li>
 </ul>
 <p>After the program completes, check for errors in the terminal and in the <code>STAR</code> log file (especially toward the end), and for existing non-empty output files.</p>
 <p>While the program runs, try to understand the above command. You can find the description of each <code>STAR</code> option we have used in the help (<code>STAR --help</code>). You can also star installing <code>IGV</code> on your laptop (see next exercise).</p>
@@ -364,7 +352,7 @@ STAR \
 <div id="exercise-5a-installing-htseq" class="section level3">
 <h3>Exercise 5A: Installing HTSeq</h3>
 <p>To quantify expression at the gene level, we will use the <code>HTSeq</code> program. It is not provided by <code>hoffman2</code>, nor in the workshop’s directory. However, you can easily install it yourself.</p>
-<p>First, load the Python3 module with the command <code>module load python/3.7.2</code>.</p>
+<p>First, load the Python3 module with the command <code>module load python/3.9.6</code>.</p>
 <p>You can then install <code>HTSeq</code> as a Python3 package:</p>
 <pre class="bash"><code>python3 -m pip install --user HTSeq</code></pre>
 <p>This will install <code>HTSeq</code> at <code>~/.local/bin/htseq-count</code>.</p>
@@ -374,8 +362,8 @@ STAR \
 <p>Use <code>HTSeq</code> to count the number of reads mapping to each gene.</p>
 <pre class="bash"><code>cd ~/QCB-W5a-Nov2021/Data
 sample=KD1
-bam_file=..$sample.Aligned.sortedByCoord.out.bam
-gtf_file=gencode.v38.basic_chr18.gtf
+bam_file=$sample.Aligned.sortedByCoord.out.bam
+gtf_file=gencode.v38_chr18.gtf
 ~/.local/bin/htseq-count \
 --idattr=gene_id \
 --type=exon --mode=union \
@@ -388,7 +376,7 @@ $gtf_file \
 </div>
 <div id="exercise-5c-merging-all-samples-counts-into-one-big-table" class="section level3">
 <h3>Exercise 5C: Merging all samples’ counts into one big table</h3>
-<p>1HTSeq1 generates a separate table of per-gene read counts for each sample. For statistical analyses, it is more practical to merge all these tables into one large table comprising the counts at all genes and for all samples.</p>
+<p><code>HTSeq</code> generates a separate table of per-gene read counts for each sample. For statistical analyses, it is more practical to merge all these tables into one large table comprising the counts at all genes and for all samples.</p>
 <p>There are many alternative ways to generate such a table; one such way is using the <code>R</code> package <code>edgeR</code>.</p>
 <ul>
 <li><p>On the cluster, load <code>R</code>: <code>module load R/4.1.0-BIO</code>.</p></li>
@@ -398,9 +386,72 @@ $gtf_file \
 </ul>
 <pre class="r"><code>library(edgeR)
 samples &lt;- c(&#39;KD1&#39;, &#39;SC1&#39;)
-files &lt;- paste0(samples,&#39;.Aligned.sortedByCoord.out.bam.pergene_counts&#39;)
+files &lt;- paste0(samples,&#39;.pergene_counts&#39;)
 counts &lt;- readDGE(files, labels=samples, header=FALSE)
 write.csv(counts$counts, &#39;counts.csv&#39;)</code></pre>
+</div>
+</div>
+<div id="exercise-6-salmon-and-tximeta" class="section level2">
+<h2>EXERCISE 6: Salmon and tximeta</h2>
+<p>We first need to grab a reference transcriptome that we can “pseudo-align” our reads to. We’re using the <code>hg38</code> reference transcriptome from ensembl. In command line:</p>
+<pre class="bash"><code>cd ~/QCB-W5a-Nov2021/Data
+wget ftp://ftp.ensembl.org/pub/release-95/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz
+gunzip Homo_sapiens.GRCh38.cdna.all.fa.gz</code></pre>
+<div id="exercise-6a-indexing-the-transcriptome" class="section level3">
+<h3>Exercise 6A: Indexing the transcriptome</h3>
+<p>Next, we’re going to build an <strong>index</strong> on our transcriptome. The index is a structure that salmon uses to <a href="%5Bhttp://bioinformatics.oxfordjournals.org/content/32/12/i192.abstract">quasi-map</a>](<a href="http://bioinformatics.oxfordjournals.org/content/32/12/i192.abstract" class="uri">http://bioinformatics.oxfordjournals.org/content/32/12/i192.abstract</a>)) RNA-seq reads during quantification. The index need only be constructed once per transcriptome, and it can then be reused to quantify many experiments. We use the *index* command of salmon to build our index:</p>
+<pre class="bash"><code>salmon=/u/home/a/abtbhatt/salmon-1.5.1_linux_x86_64/bin/salmon
+$salmon index -t Homo_sapiens.GRCh38.cdna.all.fa -i human_hg19_index -k 21</code></pre>
+<p>This will take a pretty long time - don’t worry if you don’t finish!</p>
+</div>
+<div id="exercise-6b-quantifying-reads" class="section level3">
+<h3>Exercise 6B: Quantifying reads</h3>
+<p>Now, we can create a for loop to iterate over all FASTQ samples. Inside the loop we will create a variable that stores the prefix we will use for naming output files, then we run Salmon. All of this is explained in detail in the <a href="https://salmon.readthedocs.io/en/latest/salmon.html">salmon</a>) tutorial.</p>
+<pre class="bash"><code>for fq in *.fastq.gz
+
+do
+
+# create a prefix
+base=`basename $fq .fastq.gz`
+
+# run salmon
+$salmon quant -i human_hg19_index \
+ -l A \
+ -r $fq \
+ -p 2 \
+ -o $base.salmon \
+ --seqBias \
+ --useVBOpt \
+ --validateMappings
+
+done</code></pre>
+<p>In the folder, you’ll see a corresponding folder for each sample, which contains a file named <code>quant.sf</code>. This contains the gene expression data.</p>
+</div>
+<div id="exercise-6c-importing-the-data" class="section level3">
+<h3>Exercise 6C: Importing the data</h3>
+<p>Now, we’ll be using <code>tximeta</code> to import this data. A full-blown tutorial is available <a href="https://www.bioconductor.org/packages/devel/bioc/vignettes/tximeta/inst/doc/tximeta.html">here</a>. First, let’s create a column data data frame that we’ll use to read in our data. Open up <code>R</code> again.</p>
+<p>We’ll most likely have to install the package first from <code>bioconductor</code>.</p>
+<pre class="r"><code>if (!requireNamespace(&quot;BiocManager&quot;, quietly = TRUE))
+    install.packages(&quot;BiocManager&quot;)
+
+BiocManager::install(&quot;tximeta&quot;)
+
+require(tximeta)
+coldata &lt;- data.frame(files = c(&#39;KD1.salmon/quant.sf&#39;,
+                                &#39;SC1.salmon/quant.sf&#39;), 
+                      names=c(&#39;KD1&#39;,
+                              &#39;SC1&#39;), 
+                      condition=c(rep(&#39;Knockdown&#39;,1),
+                                  rep(&#39;Scramble&#39;,1)), 
+                      stringsAsFactors=FALSE)
+coldata$condition = factor(coldata$condition,
+                           levels = c(&#39;Scramble&#39;,
+                                      &#39;Knockdown&#39;))
+
+se &lt;- tximeta(coldata)
+library(SummarizedExperiment)
+gse &lt;- summarizeToGene(se, countsFromAbundance=&quot;lengthScaledTPM&quot;)</code></pre>
+<p>Now, <code>gse</code> contains the gene expression data in a <code>SummarizedExperiment</code>. You can extract the counts as a matrix using <code>assays(gse)$counts</code>.</p>
 </div>
 </div>
 
