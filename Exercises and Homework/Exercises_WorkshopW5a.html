@@ -184,7 +184,10 @@ pre code {
 <pre class="bash"><code>wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.9.zip --no-check-certificate
 unzip fastqc_v0.11.9.zip</code></pre>
 <p>To check if FastQC installed properly:</p>
-<pre class="bash"><code>~/FastQC/fastqc --help</code></pre>
+<pre class="bash"><code>cd FastQC/
+chmod 755 fastqc
+cd
+FastQC/fastqc --help</code></pre>
 <p>Next, we have to download and install trimmomatic:</p>
 <pre class="bash"><code>wget http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmomatic-0.39.zip
 unzip Trimmomatic-0.39.zip</code></pre>

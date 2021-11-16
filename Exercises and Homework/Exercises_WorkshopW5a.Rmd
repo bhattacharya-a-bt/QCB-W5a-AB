@@ -27,7 +27,10 @@ unzip fastqc_v0.11.9.zip
 To check if FastQC installed properly:
 
 ```{bash, eval=F}
-~/FastQC/fastqc --help
+cd FastQC/
+chmod 755 fastqc
+cd
+FastQC/fastqc --help
 ```
 
 Next, we have to download and install trimmomatic:
