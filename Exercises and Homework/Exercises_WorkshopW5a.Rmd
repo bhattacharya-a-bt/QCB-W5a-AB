@@ -196,22 +196,27 @@ Read alignment programs typically require the construction of a genome sequence 
 
 To create a genome database against which to map reads, `STAR` needs the genome sequence (FASTA file) and the gene/transcript/exon annotations (GTF file).
 
+You'll have to download the FASTA file for Chromosome 18 from the Google Drive link provided in the Github repository: <https://drive.google.com/drive/folders/1HZUWZBzr9pCUNXFzJcNMCjmvOklZ2VHw?usp=sharing>. Upload this `.fa` file to `hoffman2`. We also have to download the `gtf` file from the Gencode website. Use the `wget` command in `hoffman2` to download the comprehensive gene annotation `.gtf` file.
+
 Note: Because of time and memory constraints during the workshop, we will not use the full genome, but actually only Chromosome 18.
 
 -   `hoffman2` provides `STAR` as a module. Load the `STAR` module with the command `module load star`.
 
 -   Inside your `QCB-W5a-Nov2021/` directory, create a `star_database/` subdirectory and `cd` inside this directory.
 
+-   Make sure to decompress the `gtf` file using the `gunzip` command.
+
 -   Create a `STAR` database using the following commands:
 
 ```{bash, eval=F}
 fasta_file=/u/home/a/abtbhatt/QCB-W5a-Nov2021/Data/GRCh38_chr18.fa
+gtf_file=/u/home/a/abtbhatt/QCB-W5a-Nov2021/Data/gencode.v38.annotation.gtf
 
-STAR \
---runMode genomeGenerate \
+STAR --runMode genomeGenerate \
 --genomeFastaFiles $fasta_file \
---genomeSAindexNbases 12 \
---genomeDir ./
+--sjdbGTFfile $gtf_file \
+--genomeDir ./ \
+--genomeSAindexNbases 1
 ```
 
 This command should take a bit of time to complete too.

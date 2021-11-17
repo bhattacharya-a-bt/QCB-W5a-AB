@@ -295,19 +295,22 @@ cp -r /u/scratch/a/abtbhatt/QCB-W5a-Nov2021/ /u/home/a/abtbhatt/</code></pre>
 <h3>Exercise 4A: Creating a STAR genome database</h3>
 <p>Read alignment programs typically require the construction of a genome sequence database as a preliminary step before they are able to perform read alignments. This is necessary because aligning directly to a genome sequence in FASTA format is not computationally efficient, but only needs to be run once.</p>
 <p>To create a genome database against which to map reads, <code>STAR</code> needs the genome sequence (FASTA file) and the gene/transcript/exon annotations (GTF file).</p>
+<p>You’ll have to download the FASTA file for Chromosome 18 from the Google Drive link provided in the Github repository: <a href="https://drive.google.com/drive/folders/1HZUWZBzr9pCUNXFzJcNMCjmvOklZ2VHw?usp=sharing" class="uri">https://drive.google.com/drive/folders/1HZUWZBzr9pCUNXFzJcNMCjmvOklZ2VHw?usp=sharing</a>. Upload this <code>.fa</code> file to <code>hoffman2</code>. We also have to download the <code>gtf</code> file from the Gencode website. Use the <code>wget</code> command in <code>hoffman2</code> to download the comprehensive gene annotation <code>.gtf</code> file.</p>
 <p>Note: Because of time and memory constraints during the workshop, we will not use the full genome, but actually only Chromosome 18.</p>
 <ul>
 <li><p><code>hoffman2</code> provides <code>STAR</code> as a module. Load the <code>STAR</code> module with the command <code>module load star</code>.</p></li>
 <li><p>Inside your <code>QCB-W5a-Nov2021/</code> directory, create a <code>star_database/</code> subdirectory and <code>cd</code> inside this directory.</p></li>
+<li><p>Make sure to decompress the <code>gtf</code> file using the <code>gunzip</code> command.</p></li>
 <li><p>Create a <code>STAR</code> database using the following commands:</p></li>
 </ul>
 <pre class="bash"><code>fasta_file=/u/home/a/abtbhatt/QCB-W5a-Nov2021/Data/GRCh38_chr18.fa
+gtf_file=/u/home/a/abtbhatt/QCB-W5a-Nov2021/Data/gencode.v38.annotation.gtf
 
-STAR \
---runMode genomeGenerate \
+STAR --runMode genomeGenerate \
 --genomeFastaFiles $fasta_file \
---genomeSAindexNbases 12 \
---genomeDir ./</code></pre>
+--sjdbGTFfile $gtf_file \
+--genomeDir ./ \
+--genomeSAindexNbases 1</code></pre>
 <p>This command should take a bit of time to complete too.</p>
 <p>While we wait: what are these commands doing?</p>
 <ul>
