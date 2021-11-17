@@ -216,7 +216,7 @@ STAR --runMode genomeGenerate \
 --genomeFastaFiles $fasta_file \
 --sjdbGTFfile $gtf_file \
 --genomeDir ./ \
---genomeSAindexNbases 1
+--genomeSAindexNbases 12
 ```
 
 This command should take a bit of time to complete too.
