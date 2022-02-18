@@ -218,16 +218,15 @@ tar xzvf salmon-1.5.1_linux_x86_64.tar.gz</code></pre>
 <p>Once you are connected to the cluster and logged into a worker node, make a copy of the workshop data in your <code>home</code> directory. Let’s practice grabbing files and folders from Github. Run the following code to clone the Github repository for this workshop into your <code>home</code> directory:</p>
 <pre class="bash"><code>git clone https://github.com/bhattacharya-a-bt/QCB-W5a-Nov2021.git</code></pre>
 <ul>
-<li>Exercise: How many folders are in this repository? What commands did you use?</li>
+<li>Exercise: How many folders are in this repository? What commands did you use to figure this out from the command line?</li>
 </ul>
-<p>The example data for this workshop is way too big to host on Github. I’ve kept it in my <code>SCRATCH</code> directory. Let’s delete the Github clone and recopy:</p>
-<pre class="bash"><code>rm -rf QCB-W5a-Nov2021/
-cp -r /u/scratch/a/abtbhatt/QCB-W5a-Nov2021/ /u/home/a/abtbhatt/</code></pre>
+<p>The example data for this workshop is way too big to host on Github. I’ve kept it in a Google Drive folder directory: <a href="https://drive.google.com/drive/u/1/folders/1HZUWZBzr9pCUNXFzJcNMCjmvOklZ2VHw" class="uri">https://drive.google.com/drive/u/1/folders/1HZUWZBzr9pCUNXFzJcNMCjmvOklZ2VHw</a>.</p>
 <p>This data is taken from a recent <a href="https://www.medrxiv.org/content/10.1101/2021.04.12.21255170v3">preprint</a>. The original data, fully compressed, is around 20 GB. Here, we’re only looking at a subset of the data:</p>
 <ul>
 <li><p>Only two samples</p></li>
 <li><p>Only around 1-1.5 million reads per sample</p></li>
 </ul>
+<p>Download the data from Google Drive onto your own machine. Upload it to hoffman2 using FileZilla.</p>
 </div>
 </div>
 <div id="exercise-2-fastq-files-and-quality-control" class="section level2">

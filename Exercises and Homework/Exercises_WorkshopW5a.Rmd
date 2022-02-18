@@ -89,20 +89,19 @@ Once you are connected to the cluster and logged into a worker node, make a copy
 git clone https://github.com/bhattacharya-a-bt/QCB-W5a-Nov2021.git
 ```
 
--   Exercise: How many folders are in this repository? What commands did you use?
+-   Exercise: How many folders are in this repository? What commands did you use to figure this out from the command line?
 
-The example data for this workshop is way too big to host on Github. I've kept it in my `SCRATCH` directory. Let's delete the Github clone and recopy:
-
-```{bash, eval=F}
-rm -rf QCB-W5a-Nov2021/
-cp -r /u/scratch/a/abtbhatt/QCB-W5a-Nov2021/ /u/home/a/abtbhatt/
-```
+The example data for this workshop is way too big to host on Github. I've kept it in a Google Drive folder directory:
+https://drive.google.com/drive/u/1/folders/1HZUWZBzr9pCUNXFzJcNMCjmvOklZ2VHw.
 
 This data is taken from a recent [preprint](https://www.medrxiv.org/content/10.1101/2021.04.12.21255170v3). The original data, fully compressed, is around 20 GB. Here, we're only looking at a subset of the data:
 
 -   Only two samples
 
 -   Only around 1-1.5 million reads per sample
+
+Download the data from Google Drive onto your own machine. Upload it to
+hoffman2 using FileZilla.
 
 ## EXERCISE 2: FASTQ files and quality control
 

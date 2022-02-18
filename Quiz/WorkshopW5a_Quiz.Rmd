@@ -9,7 +9,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-**This quiz is due November 30, 2021.**
+**This quiz is due February 28, 2021.**
 
 Feel free to use any materials you like to help you answer these questions. Email your responses to me at abtbhatt\@g.ucla.edu. There are 20 total points. There are bonus points along the way too, but you are capped at a total of 20 points.
 
